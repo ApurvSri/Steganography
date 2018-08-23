@@ -1,0 +1,329 @@
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Menu;
+import java.awt.MenuBar;
+import java.awt.MenuItem;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+
+import javax.imageio.ImageIO;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+
+public class SteganoMain extends JFrame implements ActionListener {
+	
+   private static final long serialVersionUID = 642140547550428960L;
+	
+	
+	JLabel displayOutput;
+	JFileChooser inputFile, outputSaveAs, txtFile;
+	JLabel imageLabel, textLabel, outputLocationLabel;
+	JTextField inputLocation, outputLocation;
+	JButton inputBrowse, outputBrowse, resetButton, createButton, saveButton, txtButton;
+	JTextArea text;
+	JPanel panel;
+	MenuItem encodeDropDown, decodeDropDown, exitDropDown;
+	Menu fileMenu, exitMenu;
+	MenuBar mb;
+	FileFilter allImages = new FileNameExtensionFilter("All Images", ImageIO.getReaderFileSuffixes());
+	FileFilter pngImages = new FileNameExtensionFilter("PNG Images", "png");
+	FileFilter txtFiles  = new FileNameExtensionFilter("TXT Files", "txt");
+	
+	
+	File activeFile, outputFile, activeTxtFile;
+	Image inputImg, outputImg;
+	BufferedImage img, imgOut;
+	int imgCols, imgRows;
+	
+		boolean switcher = true;
+	
+	
+	SteganoImgProcess processingObject = new SteganoImgProcess();
+	
+	
+	SteganoMain() {
+		
+		try
+		{
+		  UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		}
+		catch(Exception e){}
+		
+		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+		
+	
+		displayOutput = new JLabel("");
+		displayOutput.setBounds(20, 20, 100, 100);
+		
+	
+		imageLabel = new JLabel();
+		imageLabel.setForeground(Color.WHITE);
+		imageLabel.setText("Image:");
+		imageLabel.setBounds(30, 20, 100, 30);
+		inputLocation = new JTextField(30);
+		inputLocation.setEditable(false);
+		inputLocation.setBounds(30, 50, 220, 30);
+		inputBrowse = new JButton("Choose");
+		inputBrowse.addActionListener(this);
+		inputBrowse.setBounds(260, 50, 80, 30);
+		
+		textLabel = new JLabel();
+		textLabel.setText("Input text to be encoded:");
+		textLabel.setForeground(Color.WHITE);
+		textLabel.setBounds(30, 90, 200, 30);
+		text = new JTextArea();
+		text.setBounds(30, 120, 310, 140);
+		
+		txtButton = new JButton("or, Choose content from a file");
+		txtButton.addActionListener(this);
+		txtButton.setBounds(30, 260, 310, 30);
+		txtButton.setVisible(true);
+		
+		outputLocationLabel = new JLabel();
+		outputLocationLabel.setText("Destination File:");
+		outputLocationLabel.setBounds(30, 300, 200, 30);
+		outputLocationLabel.setForeground(Color.WHITE);
+		outputLocation = new JTextField(30);
+		outputLocation.setBounds(30, 330, 220, 30);
+		outputBrowse = new JButton("Browse");
+		outputBrowse.addActionListener(this);
+		outputBrowse.setBounds(260, 330, 80, 30);
+		
+		resetButton = new JButton("Reset");
+		resetButton.addActionListener(this);
+		resetButton.setBounds(30, 380, 150, 30);
+		createButton = new JButton("Encode");
+		createButton.addActionListener(this);
+		createButton.setBounds(190, 380, 150, 30);
+		saveButton = new JButton("Save");
+		saveButton.addActionListener(this);
+		saveButton.setBounds(190, 380, 150, 30);
+		saveButton.setVisible(false);
+				
+		panel = new JPanel() {
+			
+			private static final long serialVersionUID = 8104705757223466700L;
+			
+					public void paintComponent(Graphics g) {
+				Image background = null;
+				try {
+					background = ImageIO.read(getClass().getResource("images/login_background.jpg"));
+				} catch (IOException e) {
+					
+					e.printStackTrace();
+				}
+				g.drawImage(background,0,0,this);
+			}
+		};
+		panel.setLayout(null);
+		panel.add(displayOutput);
+		panel.add(imageLabel);
+		panel.add(inputLocation);
+		panel.add(inputBrowse);
+		panel.add(textLabel);
+		panel.add(text);
+		panel.add(outputLocation);
+		panel.add(outputLocationLabel);
+		panel.add(outputBrowse);
+		panel.add(resetButton);
+		panel.add(createButton);
+		panel.add(saveButton);
+		panel.add(txtButton);
+		
+		setTitle("Steganography - Encode");
+		add(panel);
+		setVisible(true);
+		setResizable(false);
+		setSize(370,480);
+		setLocation(350,100);
+		
+		encodeDropDown = new MenuItem("Encode");
+        encodeDropDown.addActionListener(this);
+        decodeDropDown = new MenuItem("Decode");
+        decodeDropDown.addActionListener(this);
+        fileMenu = new Menu("File");
+        fileMenu.add(encodeDropDown);
+        fileMenu.add(decodeDropDown);
+		
+        exitDropDown = new MenuItem("Exit Program");
+        exitDropDown.addActionListener(this);
+        exitMenu = new Menu("Exit");
+        exitMenu.add(exitDropDown);
+        
+        mb = new MenuBar();
+        mb.add(fileMenu);
+        mb.add(exitMenu);
+        setMenuBar(mb);
+			
+	} 
+
+	public void actionPerformed(ActionEvent mouseClick) {
+		
+		if (mouseClick.getSource() == exitDropDown) { 
+			System.out.println("Exiting the software.");
+			System.exit(0);
+			
+		} else if (mouseClick.getSource() == resetButton) { 
+			displayOutput.setIcon(null);
+			inputLocation.setText(null);
+			outputLocation.setText(null);
+			text.setText(null);
+			
+		} else if (mouseClick.getSource() == encodeDropDown) { 
+			resetButton.doClick(); 
+			createButton.setVisible(true); 
+			saveButton.setVisible(false); 
+			setTitle("Steganography - Encode");
+			textLabel.setText("Input text to be encoded:");
+			switcher = true; 
+			text.setBounds(30, 120, 310, 140);
+			txtButton.setVisible(true);
+			
+		} else if (mouseClick.getSource() == decodeDropDown) { 
+			resetButton.doClick(); 
+			createButton.setVisible(false); 
+			saveButton.setVisible(true); 
+			setTitle("Steganography - Decode");
+			textLabel.setText("Decoded text:");
+			switcher = false; 
+			text.setBounds(30, 120, 310, 170);
+			txtButton.setVisible(false);
+			
+		} else if (mouseClick.getSource() == inputBrowse) { 
+			if(inputFile == null) {
+				inputFile = new JFileChooser();
+			}
+			
+			
+			inputFile.setAcceptAllFileFilterUsed(false);
+			if(switcher) { 
+				inputFile.removeChoosableFileFilter(pngImages);
+				inputFile.addChoosableFileFilter(allImages); 
+			} else { //if switcher denotes decoding process
+				inputFile.removeChoosableFileFilter(allImages); 
+				inputFile.addChoosableFileFilter(pngImages); 
+			}
+			
+			
+			int openFile = inputFile.showDialog(null, "Open file");
+			if (openFile == JFileChooser.APPROVE_OPTION) {
+				activeFile = inputFile.getSelectedFile();
+				inputLocation.setText(activeFile.getAbsolutePath());
+				outputSaveAs = new JFileChooser(activeFile);
+			}
+			
+		} else if (mouseClick.getSource() == outputBrowse) { 
+			if(outputSaveAs == null) {
+				outputSaveAs = new JFileChooser();
+			}
+			
+			
+			outputSaveAs.setAcceptAllFileFilterUsed(false);
+			if(switcher) { 
+				outputSaveAs.removeChoosableFileFilter(txtFiles); 
+				outputSaveAs.addChoosableFileFilter(pngImages); 
+				
+			} else { 
+				outputSaveAs.removeChoosableFileFilter(pngImages); 
+				outputSaveAs.addChoosableFileFilter(txtFiles); 
+			}
+			
+			
+			int openDirectory = outputSaveAs.showDialog(null, "Save As");
+			if (openDirectory == JFileChooser.APPROVE_OPTION) {
+				outputFile = outputSaveAs.getSelectedFile();
+				if(switcher) { 
+					outputLocation.setText(outputFile.getAbsolutePath() + ".png"); 
+				} else { 
+					outputLocation.setText(outputFile.getAbsolutePath() + ".txt"); 
+				}
+			}
+		} else if(mouseClick.getSource() == txtButton) { 
+			if(txtFile == null) {
+				txtFile = new JFileChooser();
+			}
+			
+			int openText = txtFile.showDialog(null, "Open file");
+			if (openText == JFileChooser.APPROVE_OPTION) {
+				
+				activeTxtFile = txtFile.getSelectedFile();
+				try {
+					text.setText(new Scanner( activeTxtFile ).useDelimiter("\\A").next()); 
+				} catch (FileNotFoundException e) {
+					System.out.println("Text file not found!");
+					e.printStackTrace();
+				}
+			}
+			
+		} else if (mouseClick.getSource() == createButton) { 
+			try {
+				img = ImageIO.read(new File(activeFile.getAbsolutePath())); 
+				imgOut = ImageIO.read(new File(activeFile.getAbsolutePath())); 
+																			   			} catch (IOException e) {
+				System.out.println("error reading file!");
+				e.printStackTrace();
+			}
+			imgCols = img.getWidth();
+		    imgRows = img.getHeight();
+		    
+		    
+		    boolean success = processingObject.encode(img, imgOut, imgCols, imgRows, text.getText(), outputLocation.getText());
+		    
+		    if(success) {
+		    	JOptionPane.showMessageDialog(this,"Successfully created image", "Success",JOptionPane.INFORMATION_MESSAGE);
+		    } else {
+		    	JOptionPane.showMessageDialog(this,"Problem in saving file!", "Error",JOptionPane.ERROR_MESSAGE);
+		    }
+		    
+            
+		} else if (mouseClick.getSource() == saveButton) { 
+			try {
+				img = ImageIO.read(new File(activeFile.getAbsolutePath())); 
+			} catch (IOException e) {
+				System.out.println("error reading file!");
+				e.printStackTrace();
+			}
+			imgCols = img.getWidth();
+		    imgRows = img.getHeight();
+		    
+		   
+		    String decodedMsg = processingObject.decode(img, imgCols, imgRows); 
+		    
+		    if(decodedMsg == null) { 
+		    	JOptionPane.showMessageDialog(this,"Incorrect file or corrupted message", "Error",JOptionPane.ERROR_MESSAGE);
+		    	resetButton.doClick();
+		    } else {
+		    	text.setText(decodedMsg); 
+		    	try {
+		    		
+					PrintWriter out = new PrintWriter(outputLocation.getText());
+					out.print(decodedMsg);
+					out.close();
+					JOptionPane.showMessageDialog(this,"Successfully created TXT file", "Success",JOptionPane.INFORMATION_MESSAGE);
+				} catch (FileNotFoundException e) {
+					System.out.println("text file could not be saved.");
+					e.printStackTrace();
+				} 
+		    }
+		}
+	} 
+}

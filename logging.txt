@@ -1,0 +1,139 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.sql.*;
+ 
+public class Logging extends JFrame implements ActionListener, WindowListener, MouseListener {
+ 
+	private static final long serialVersionUID = -8190963131279222834L;
+	private OkButton Ok = new OkButton("Log In");
+    private MyButton Ca = new MyButton("Cancel");
+    private JTextField ab;
+    private JTextField cd;
+ 
+    private Container ef;
+    private JLabel label = new JLabel("Enter USERNAME: ");
+    private JLabel label1 = new JLabel("Enter PASSWORD: ");
+     
+    public Logging() {
+        super("Administrator GUI");
+        setBounds(400, 200, 200, 250);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        ab = new JTextField(10);
+        cd = new JTextField(10);
+        FlowLayout flow = new FlowLayout();
+        setLayout(flow);
+        ef = getContentPane();
+ 
+        ef.add(label);
+        ef.add(ab);
+        ef.add(label1);
+        ef.add(cd);
+        ef.add(Ok);
+        ef.add(Ca);
+ 
+        ab.setHorizontalAlignment(SwingConstants.CENTER);
+        cd.setHorizontalAlignment(SwingConstants.CENTER);
+ 
+ 
+ 
+        Ok.addActionListener(this);
+        Ca.addActionListener(this);
+        setVisible(true);
+    }
+ 
+        String data = "jdbc:odbc:VideoStore";
+ 
+    public void windowActivated(WindowEvent e) {}
+    public void windowClosed(WindowEvent e) {}
+    public void windowDeactivated(WindowEvent e) {}
+    public void windowDeiconified(WindowEvent e) {}
+    public void windowIconified(WindowEvent e) {}
+    public void windowOpened(WindowEvent e) {}
+    public void windowClosing(WindowEvent e) {}
+ 
+    public void mouseClicked(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {}
+ 
+    class MyButton extends JButton {
+       
+		private static final long serialVersionUID = 1164700873954881960L;
+		MouseListener m = new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                System.exit(0);
+            }
+        };
+               
+        public MyButton(String label){
+            super(label);
+                    addMouseListener(m);
+            }
+     
+    }
+ 
+    class OkButton extends JButton {
+        
+		private static final long serialVersionUID = -3511623613750689651L;
+		MouseListener m = new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                 
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/appy", "root", "root");
+            Statement st = conn.createStatement();
+            ResultSet rec = st.executeQuery("SELECT username, password FROM login");
+ 
+        while (rec.next()) {
+            String x = ab.getText();
+            String y = cd.getText();
+             
+ 
+            if (x.equals(rec.getString("username")) && y.equals(rec.getString("password"))) 
+            {
+                    System.out.println("Logged in!");
+                    SteganoMain page = new SteganoMain();
+        			dispose();
+        			page.setVisible(true);
+
+                } else {
+                    System.out.println("Password did not match username!");
+                }
+           }
+ 
+        
+        
+        
+        
+        
+        
+      
+        st.close();
+        } catch(SQLException d) {
+            System.out.println(e.toString());
+        } catch(ClassNotFoundException f) {
+            System.out.println(e.toString());
+        }
+        }
+ 
+        };
+               
+        public OkButton(String label){
+            super(label);
+                    addMouseListener(m);
+            }
+     
+    }
+ 
+ 
+ 
+    public void actionPerformed(ActionEvent e) {
+    }
+ 
+    public static void main(String[] args) {
+        new Logging();
+    }
+ 
+    public void mouseEntered(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {}
+}
